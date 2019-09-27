@@ -1,0 +1,78 @@
+﻿@model IEnumerable<WebApplication.Models.File>
+
+@{
+    ViewBag.Title = "Files";
+}
+
+<h2>Files</h2>
+
+<p>
+    <input type="file" id="file" multiple name="file" style="display:none;" onchange="uploadFile()" />
+    <button id="button" name="button" value="Upload" onclick="selectFile();">Upload</button>
+
+    @*<input type="file" name="file" class="btn btn-success" />*@
+    @*@Html.ActionLink("Upload", "Upload")*@
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.FileName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.FileSize)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UploadingDate)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.FileName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.FileSize)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UploadingDate)
+        </td>
+        <td>
+            @Html.ActionLink("Delete", "Delete", new { id=item.FileId })
+        </td>
+    </tr>
+}
+
+</table>
+
+
+<script>
+    function selectFile() {
+       $("#file").click();
+    };
+
+    function uploadFile() {
+        var fileUpload = $("#file").get(0);
+        var files = fileUpload.files;
+
+        var fileData = new FormData();     
+
+        for (var i = 0; i < files.length; i++) {
+            fileData.append(files[i].name, files[i]);
+        }        
+        
+        $.ajax({
+            url: '/FileUpload',
+            type: 'post',
+            datatype: 'json',
+            contentType: false,
+            processData: false,
+            async: false,
+            data: fileData,
+            success: function (response) {
+                location.reload();
+            }
+        });
+    };
+</script>
