@@ -46,6 +46,10 @@ namespace WebApplication.Controllers
 
         public ActionResult Register()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Files");
+            }
             return View();
         }
 
@@ -87,9 +91,12 @@ namespace WebApplication.Controllers
 
             var files = db.Files.Where(f => f.UserId == user.Id);
 
+            ViewBag.Date = DateTime.Today.ToString("yyyy-MM-dd");
+
             return View(files);
         }
 
+        [HttpPost]
         public ActionResult UploadFile()
         {
             if (!User.Identity.IsAuthenticated)
@@ -129,6 +136,7 @@ namespace WebApplication.Controllers
             return RedirectToAction("Files");
         }
 
+        [HttpPost]
         public ActionResult DeleteFile(int id)
         {
             if (!User.Identity.IsAuthenticated)
@@ -172,14 +180,33 @@ namespace WebApplication.Controllers
             return RedirectToAction("Files");
         }
 
-        public ActionResult ExportToExcel()
+        public ActionResult ExportToExcel(string date)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var range = date.Split(':');
+
+            DateTime firstDate = Convert.ToDateTime(range[0]);
+            DateTime secondDate = Convert.ToDateTime(range[1]);
+
+            if (firstDate > secondDate)
+            {
+                var tmp = firstDate;
+                firstDate = secondDate;
+                secondDate = tmp;
+            }
+
+            secondDate = secondDate.AddDays(1);
+
             var db = new UserContext();
 
             var userId = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name).Id;
 
-            var files = db.Files.Where(f => f.UserId == userId).Select(a => new { a.FileName, a.FileSize, a.UploadingDate }).ToList();
-
+            var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= firstDate && f.UploadingDate <= secondDate).Select(a => new { a.FileName, a.FileSize, a.UploadingDate }).ToList();
+            
             GridView gridview = new GridView();
             gridview.DataSource = files;
             gridview.DataBind();
@@ -204,7 +231,6 @@ namespace WebApplication.Controllers
                     Response.End();
                 }
             }
-
             return RedirectToAction("Files");
         }
 

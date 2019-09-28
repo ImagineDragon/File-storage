@@ -12,6 +12,7 @@ namespace WebApplication.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Username")]
         public string UserName { get; set; }
 
         [Required]
@@ -28,12 +29,15 @@ namespace WebApplication.Models
         public int UserId { get; set; }
 
         [Required]
+        [Display(Name = "File name")]
         public string FileName { get; set; }
 
         [Required]
+        [Display(Name = "File size")]
         public int FileSize { get; set; }
 
         [Required]
+        [Display(Name = "Uploading date")]
         public DateTime UploadingDate { get; set; }
     }
 

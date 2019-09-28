@@ -10,7 +10,12 @@
     <input type="file" id="file" multiple name="file" style="display:none;" onchange="uploadFiles()" />
     <button class="btn btn-success" id="button" name="button" value="Upload" onclick="selectFiles()">Upload</button>
 
-    @Html.ActionLink("Export to excel", "ExportToExcel")
+    <span style="float: right">
+        <input class="date" type="date" value="@ViewBag.Date" /> :
+        <input class="date" type="date" value="@ViewBag.Date" />
+
+        <button class="btn btn-primary" onclick="exportToExcel()">Export to excel</button>
+    </span>
 
 </p>
 <table class="table">
@@ -69,8 +74,12 @@
 
 </table>
 
-
 <script>
+    function exportToExcel() {
+        var date = $(".date")[0].value + ":" + $(".date")[1].value;
+        window.location.href = "@Url.Action("ExportToExcel")" + "?date=" + date;
+    };
+
     function selectFiles() {
         $("#file").click();
     };
@@ -100,9 +109,10 @@
     };
 
     function deleteFile(id) {
-        console.log(id);
         $.ajax({
-            url: '/DeleteFile/' + id,
+            url: '/DeleteFile',
+            type: 'post',
+            data: { 'id': id },
             async: false,
             success: function (response) {
                 location.reload();
