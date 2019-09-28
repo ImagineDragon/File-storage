@@ -7,11 +7,11 @@
 <h2>Files</h2>
 
 <p>
-    <input type="file" id="file" multiple name="file" style="display:none;" onchange="uploadFile()" />
-    <button id="button" name="button" value="Upload" onclick="selectFile();">Upload</button>
+    <input type="file" id="file" multiple name="file" style="display:none;" onchange="uploadFiles()" />
+    <button class="btn btn-success" id="button" name="button" value="Upload" onclick="selectFiles()">Upload</button>
 
-    @*<input type="file" name="file" class="btn btn-success" />*@
-    @*@Html.ActionLink("Upload", "Upload")*@
+    @Html.ActionLink("Export to excel", "ExportToExcel")
+
 </p>
 <table class="table">
     <tr>
@@ -27,43 +27,66 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.FileName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FileSize)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UploadingDate)
-        </td>
-        <td>
-            @Html.ActionLink("Delete", "Delete", new { id=item.FileId })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.ActionLink(item.FileName, "DownloadFile", new { item.FileName })
+            </td>
+            <td>
+                @{ string size = "";
+                    if (item.FileSize > Math.Pow(1024, 4))
+                    {
+                        size = Math.Round(item.FileSize / Math.Pow(1024, 4), 2) + " TB";
+                    }
+                    else if (item.FileSize > Math.Pow(1024, 3))
+                    {
+                        size = Math.Round(item.FileSize / Math.Pow(1024, 3), 2) + " GB";
+                    }
+                    else if (item.FileSize > Math.Pow(1024, 2))
+                    {
+                        size = Math.Round(item.FileSize / Math.Pow(1024, 2), 2) + " MB";
+                    }
+                    else if (item.FileSize > 1024)
+                    {
+                        size = Math.Round((double)(item.FileSize / 1024), 2) + " KB";
+                    }
+                    else
+                    {
+                        size = item.FileSize + " bytes";
+                    }
+                }
+                @size
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UploadingDate)
+            </td>
+            <td>
+                <button class="btn btn-danger" onclick="deleteFile(@item.FileId)">Delete</button>
+            </td>
+        </tr>
+    }
 
 </table>
 
 
 <script>
-    function selectFile() {
-       $("#file").click();
+    function selectFiles() {
+        $("#file").click();
     };
 
-    function uploadFile() {
+    function uploadFiles() {
         var fileUpload = $("#file").get(0);
         var files = fileUpload.files;
 
-        var fileData = new FormData();     
+        var fileData = new FormData();
 
         for (var i = 0; i < files.length; i++) {
             fileData.append(files[i].name, files[i]);
-        }        
-        
+        }
+
         $.ajax({
-            url: '/FileUpload',
+            url: '/UploadFile',
             type: 'post',
             datatype: 'json',
             contentType: false,
@@ -75,4 +98,15 @@
             }
         });
     };
+
+    function deleteFile(id) {
+        console.log(id);
+        $.ajax({
+            url: '/DeleteFile/' + id,
+            async: false,
+            success: function (response) {
+                location.reload();
+            }
+        });
+    }
 </script>
