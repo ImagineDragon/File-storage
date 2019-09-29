@@ -8,6 +8,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using WebApplication.Models;
+using WebApplication.Helpers;
 
 namespace WebApplication.Controllers
 {
@@ -30,7 +31,8 @@ namespace WebApplication.Controllers
             {
                 UserContext db = new UserContext();
 
-                User acc = db.Users.FirstOrDefault(u => u.UserName == user.UserName && u.Password == user.Password);
+                var password = Hasher.Hash(user.Password);
+                User acc = db.Users.FirstOrDefault(u => u.UserName == user.UserName && u.Password == password);
 
                 if (acc != null)
                 {
@@ -65,7 +67,8 @@ namespace WebApplication.Controllers
 
                 if (acc == null)
                 {
-                    db.Users.Add(new User { UserName = user.UserName, Password = user.Password });
+                    var password = Hasher.Hash(user.Password);
+                    db.Users.Add(new User { UserName = user.UserName, Password = password });
                     db.SaveChanges();
 
                     FormsAuthentication.SetAuthCookie(user.UserName, true);
