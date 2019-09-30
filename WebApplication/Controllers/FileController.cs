@@ -10,13 +10,9 @@ namespace WebApplication.Controllers
 {
     public class FileController : Controller
     {
+        [Authorize]
         public ActionResult Files()
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Login");
-            }
-
+        {            
             UserContext db = new UserContext();
 
             User user = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
@@ -28,14 +24,10 @@ namespace WebApplication.Controllers
             return View(files);
         }
 
+        [Authorize]
         [HttpPost]
         public ActionResult UploadFile()
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
             if (Request.Files.Count > 0)
             {
                 UserContext db = new UserContext();
@@ -68,14 +60,10 @@ namespace WebApplication.Controllers
             return RedirectToAction("Files");
         }
 
+        [Authorize]
         [HttpPost]
         public ActionResult DeleteFile(int id)
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
             var db = new UserContext();
 
             var file = db.Files.FirstOrDefault(f => f.FileId == id);
@@ -93,13 +81,9 @@ namespace WebApplication.Controllers
             return RedirectToAction("Files");
         }
 
+        [Authorize]
         public ActionResult DownloadFile(string fileName)
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
             var path = Server.MapPath("~/UsersFiles/" + User.Identity.Name + "/" + fileName);
 
             if (System.IO.File.Exists(path))
@@ -112,33 +96,32 @@ namespace WebApplication.Controllers
             return RedirectToAction("Files");
         }
 
-        public ActionResult ExportToExcel(string date)
+        [Authorize]
+        public ActionResult ExportToExcel(DateRange date)
         {
-            if (!User.Identity.IsAuthenticated)
+            Type type = typeof(Models.File);
+
+            var properties = type.GetProperties().Where(prop => !prop.IsDefined(typeof(Hidden), false));
+
+            var model = new { properties };
+
+            if (date.FirstDate > date.SecondDate)
             {
-                return RedirectToAction("Login", "Account");
+                var tmp = date.FirstDate;
+                date.FirstDate = date.SecondDate;
+                date.SecondDate = tmp;
             }
 
-            var range = date.Split(':');
-
-            DateTime firstDate = Convert.ToDateTime(range[0]);
-            DateTime secondDate = Convert.ToDateTime(range[1]);
-
-            if (firstDate > secondDate)
-            {
-                var tmp = firstDate;
-                firstDate = secondDate;
-                secondDate = tmp;
-            }
-
-            secondDate = secondDate.AddDays(1);
+            date.SecondDate = date.SecondDate.AddDays(1);
 
             var db = new UserContext();
 
             var userId = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name).Id;
 
-            var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= firstDate && f.UploadingDate <= secondDate).Select(a => new { a.FileName, a.FileSize, a.UploadingDate }).ToList();
-            
+            var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= date.FirstDate && f.UploadingDate <= date.SecondDate);
+                //.Select(a => new { a.GetType().GetProperties().Where(prop => !prop.IsDefined(typeof(Hidden), false)) }).ToList();
+            //var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= date.FirstDate && f.UploadingDate <= date.SecondDate).Select(a => new { a.FileName, a.FileSize, a.UploadingDate }).ToList();
+
             GridView gridview = new GridView();
             gridview.DataSource = files;
             gridview.DataBind();

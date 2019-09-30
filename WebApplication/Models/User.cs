@@ -12,7 +12,6 @@ namespace WebApplication.Models
         public int Id { get; set; }
 
         [Required]
-        [Display(Name = "Username")]
         public string UserName { get; set; }
 
         [Required]
@@ -20,30 +19,10 @@ namespace WebApplication.Models
         public string Password { get; set; }
     }
 
-    public class File
-    {
-        [Key]
-        public int FileId { get; set; }
-
-        [Required]
-        public int UserId { get; set; }
-
-        [Required]
-        [Display(Name = "File name")]
-        public string FileName { get; set; }
-
-        [Required]
-        [Display(Name = "File size")]
-        public int FileSize { get; set; }
-
-        [Required]
-        [Display(Name = "Uploading date")]
-        public DateTime UploadingDate { get; set; }
-    }
-
     public class LoginModel
     {
         [Required]
+        [Display(Name = "Username")]
         public string UserName { get; set; }
 
         [Required]
@@ -54,6 +33,7 @@ namespace WebApplication.Models
     public class RegisterModel
     {
         [Required]
+        [Display(Name = "Username")]
         public string UserName { get; set; }
 
         [Required]
@@ -61,6 +41,7 @@ namespace WebApplication.Models
         public string Password { get; set; }
 
         [Required]
+        [Display(Name = "Confirm password")]
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Wrong confirm password")]
         public string ConfirmPassword { get; set; }

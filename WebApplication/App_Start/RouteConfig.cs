@@ -16,13 +16,13 @@ namespace WebApplication
             routes.MapRoute(
                 name: "Account",
                 url: "Account/{action}",
-                defaults: new { controller = "Account", action = "Login" }
+                defaults: new { controller = "Account" }
             );
 
             routes.MapRoute(
                 name: "File",
-                url: "{action}/{id}",
-                defaults: new { controller = "File", action = "Files", id = UrlParameter.Optional }
+                url: "{action}",
+                defaults: new { controller = "File", id = UrlParameter.Optional }
             );
         }
     }

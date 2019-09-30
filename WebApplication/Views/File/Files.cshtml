@@ -76,8 +76,23 @@
 
 <script>
     function exportToExcel() {
-        var date = $(".date")[0].value + ":" + $(".date")[1].value;
-        window.location.href = "@Url.Action("ExportToExcel")" + "?date=" + date;
+        var date = { firstDate: $(".date")[0].value, secondDate: $(".date")[1].value}
+
+        $.ajax({
+            url: '/ExportToExcel',
+            type: 'post',
+            data: { 'date': date },
+            async: false,
+            success: function (response) {
+                console.log(response);
+                //const url = window.URL.createObjectURL(new Blob([response]));
+                //const link = document.createElement('a');
+                //link.href = url;
+                //link.setAttribute('download', 'files.xls');
+                //document.body.appendChild(link);
+                //link.click();
+            }
+        });
     };
 
     function selectFiles() {

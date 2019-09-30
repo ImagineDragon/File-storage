@@ -10,10 +10,10 @@ namespace WebApplication.Controllers
     {
         public ActionResult Login()
         {
-            //if (User.Identity.IsAuthenticated)
-            //{
-            //    return RedirectToAction("Files", "Files");
-            //}
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Files", "File");
+            }
             return View();
         }
 
