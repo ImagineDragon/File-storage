@@ -141,3 +141,5 @@ E:\Roma\Delphi\File-storage\File-storage\WebApplication\obj\Debug\WebApplication
 E:\Roma\Delphi\File-storage\File-storage\WebApplication\obj\Debug\WebApplication.csproj.CopyComplete
 E:\Roma\Delphi\File-storage\File-storage\WebApplication\obj\Debug\WebApplication.dll
 E:\Roma\Delphi\File-storage\File-storage\WebApplication\obj\Debug\WebApplication.pdb
+D:\C#\WebApplication\WebApplication\bin\EPPlus.dll
+D:\C#\WebApplication\WebApplication\bin\EPPlus.xml

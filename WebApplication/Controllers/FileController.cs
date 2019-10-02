@@ -1,6 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using OfficeOpenXml;
+using OfficeOpenXml.Table;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Web.Mvc;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -96,14 +104,29 @@ namespace WebApplication.Controllers
             return RedirectToAction("Files");
         }
 
+        public static object GetValue(object obj, List<PropertyInfo> propertyInfos)
+        {
+            Dictionary<string, object> dictionary = new Dictionary<string, object>();
+            foreach (var p in propertyInfos)
+            {
+                var value = p.GetValue(obj);
+                dictionary.Add(p.Name, value);
+            }
+            var expandoObject = new ExpandoObject();
+            var keyValuePairs = (ICollection<KeyValuePair<string, object>>)expandoObject;
+            foreach(var kvp in dictionary)
+            {
+                keyValuePairs.Add(kvp);
+            }
+            return expandoObject;
+        }
+
         [Authorize]
         public ActionResult ExportToExcel(DateRange date)
         {
             Type type = typeof(Models.File);
 
-            var properties = type.GetProperties().Where(prop => !prop.IsDefined(typeof(Hidden), false));
-
-            var model = new { properties };
+            var properties = type.GetProperties().Where(prop => !prop.IsDefined(typeof(Hidden), false)).ToList();
 
             if (date.FirstDate > date.SecondDate)
             {
@@ -118,36 +141,54 @@ namespace WebApplication.Controllers
 
             var userId = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name).Id;
 
-            var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= date.FirstDate && f.UploadingDate <= date.SecondDate);
-                //.Select(a => new { a.GetType().GetProperties().Where(prop => !prop.IsDefined(typeof(Hidden), false)) }).ToList();
-            //var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= date.FirstDate && f.UploadingDate <= date.SecondDate).Select(a => new { a.FileName, a.FileSize, a.UploadingDate }).ToList();
+            var files = db.Files.Where(f => f.UserId == userId && f.UploadingDate >= date.FirstDate && f.UploadingDate <= date.SecondDate).ToList();
 
-            GridView gridview = new GridView();
-            gridview.DataSource = files;
-            gridview.DataBind();
-
-            // Clear all the content from the current response
-            Response.ClearContent();
-            Response.Buffer = true;
-            // set the header
-            Response.AddHeader("content-disposition", "attachment; filename = files.xls");
-            Response.ContentType = "application/ms-excel";
-            Response.Charset = "";
-            // create HtmlTextWriter object with StringWriter
-            using (StringWriter sw = new StringWriter())
+            try
             {
-                using (HtmlTextWriter htw = new HtmlTextWriter(sw))
+                DataTable Dt = new DataTable();
+                foreach(var prop in properties)
                 {
-                    // render the GridView to the HtmlTextWriter
-                    gridview.RenderControl(htw);
-                    // Output the GridView content saved into StringWriter
-                    Response.Output.Write(sw.ToString());
-                    Response.Flush();
-                    Response.End();
+                    Dt.Columns.Add(prop.Name, prop.PropertyType);
+                }
+
+                foreach(var file in files)
+                {
+                    DataRow row = Dt.NewRow();
+                    for(int i = 0; i < properties.Count; i++)
+                    {
+                        row[i] = properties[i].GetValue(file);
+                    }
+                    Dt.Rows.Add(row);
+                }
+
+                var memoryStream = new MemoryStream();
+                using(var excelPackage = new ExcelPackage(memoryStream))
+                {
+                    var worksheet = excelPackage.Workbook.Worksheets.Add("Sheet1");
+                    worksheet.Cells["A1"].LoadFromDataTable(Dt, true, TableStyles.None);
+
+                    Session["DownloadExcel"] = excelPackage.GetAsByteArray();
+                    return Json("");
                 }
             }
-            return RedirectToAction("Files");
+            catch (Exception e)
+            {
+                throw;
+            }
         }
 
+        [Authorize]
+        public ActionResult DownloadExcel()
+        {
+            if (Session["DownloadExcel"] != null)
+            {
+                byte[] data = Session["DownloadExcel"] as byte[];
+                return File(data, "application/octet-stream", "Files.xlsx");
+            }
+            else
+            {
+                return new EmptyResult();
+            }
+        }
     }
 }
