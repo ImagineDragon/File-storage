@@ -143,3 +143,5 @@ E:\Roma\Delphi\File-storage\File-storage\WebApplication\obj\Debug\WebApplication
 E:\Roma\Delphi\File-storage\File-storage\WebApplication\obj\Debug\WebApplication.pdb
 D:\C#\WebApplication\WebApplication\bin\EPPlus.dll
 D:\C#\WebApplication\WebApplication\bin\EPPlus.xml
+E:\Roma\Delphi\File-storage\File-storage\WebApplication\bin\EPPlus.dll
+E:\Roma\Delphi\File-storage\File-storage\WebApplication\bin\EPPlus.xml

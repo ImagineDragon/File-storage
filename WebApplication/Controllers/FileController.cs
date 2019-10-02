@@ -3,6 +3,7 @@ using OfficeOpenXml;
 using OfficeOpenXml.Table;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Dynamic;
 using System.IO;
@@ -148,7 +149,7 @@ namespace WebApplication.Controllers
                 DataTable Dt = new DataTable();
                 foreach(var prop in properties)
                 {
-                    Dt.Columns.Add(prop.Name, prop.PropertyType);
+                    Dt.Columns.Add((prop.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute).Name);
                 }
 
                 foreach(var file in files)
@@ -165,7 +166,8 @@ namespace WebApplication.Controllers
                 using(var excelPackage = new ExcelPackage(memoryStream))
                 {
                     var worksheet = excelPackage.Workbook.Worksheets.Add("Sheet1");
-                    worksheet.Cells["A1"].LoadFromDataTable(Dt, true, TableStyles.None);
+                    worksheet.Cells["A1"].LoadFromDataTable(Dt, true);
+                    worksheet.Cells.AutoFitColumns();
 
                     Session["DownloadExcel"] = excelPackage.GetAsByteArray();
                     return Json("");
